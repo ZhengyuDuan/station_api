@@ -17,12 +17,14 @@ $sensors = new sensors($db);
  
 // read products will be here
 // query products
-if($sensors->generateData()){
+$result;
+if($result = $sensors->generateData()){
     // set response code - 200 OK
     http_response_code(200);
  
     // show sensors data in json format
-    echo json_encode(array("message" => "Data Generated."));
+    // echo json_encode(array("message" => "Data Generated."));
+    echo json_encode($result);
 }
  
 // no products found will be here
