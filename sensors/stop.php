@@ -17,13 +17,13 @@ $sensors = new sensors($db);
  
 // read products will be here
 // query products
-if($result = $sensors->generateData()){
+if($sensors->stop()){
     // set response code - 200 OK
     http_response_code(200);
  
     // show sensors data in json format
     // echo json_encode(array("message" => "Data Generated."));
-    echo json_encode($result);
+    echo json_encode(array("message" => "Station Stopped."));
 }
  
 // no products found will be here
@@ -34,6 +34,6 @@ else{
  
     // tell the user no products found
     echo json_encode(
-        array("message" => "Gathering Data Failed.")
+        array("message" => "Failed.")
     );
 }

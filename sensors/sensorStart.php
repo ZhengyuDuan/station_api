@@ -26,18 +26,13 @@ if(
     !empty($data->sensorID)
     // !empty($data->sensorStatus)
 ){
- 
-    // set product property values
-    // $sensor->sensorID = $data->sensorID;
-    $sensor->sensorID = $data->sensorID;
-    echo "?";
-    if($result = $sensor->getSensorData()){
+    if($sensor->sensorStart($data->sensorID)){
  
         // set response code - 201 created
         http_response_code(201);
  
         // tell the user
-        echo json_encode($result);
+        echo json_encode(array("message" => "sensor ".$sensor->sensorID." started."));
     }
  
     // if unable to create the product, tell the user
@@ -47,13 +42,12 @@ if(
         http_response_code(503);
  
         // tell the user
-        echo json_encode(array("message" => "Unable to get sensor data."));
+        echo json_encode(array("message" => "Unable to start sensor."));
     }
 }
  
 // tell the user data is incomplete
 else{
-    // echo $data->sensorType;
     // set response code - 400 bad request
     http_response_code(400);
  

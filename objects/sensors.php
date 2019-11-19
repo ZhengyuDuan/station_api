@@ -32,10 +32,16 @@ class sensors{
         return $stmt;
     }
 
-    // read all data from sensors in this edge station
-    // this function will get current data
-    function read(){
-
+    function getStatus(){
+        $query = "SELECT status from info;" ;
+     
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+     
+        // execute query
+        $stmt->execute();
+     
+        return $stmt->fetchColumn();
     }
 
     // register new sensor in this edge station
@@ -112,8 +118,8 @@ class sensors{
     }
 
     // get history data for a period of time of ONE sensor.
-    function readHistory(){
-    }
+    // function readHistory(){
+    // }
 
     // update edge station status to stop
     function stop(){
@@ -129,11 +135,22 @@ class sensors{
         $query = "UPDATE info SET status = 1;";
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
+        // return true;
     }
 
     // update sensor status
-    // TODO: might change to two function: sensorStop/sensorStart
-    function update(){
+    function sensorStart($sensorID){
+        $query = "UPDATE sensors SET sensorStatus = 1 WHERE sensorID = ".$sensorID.";";
+        $stmt = $this->conn->prepare($query);
+        // echo $query;
+        return $stmt->execute();
+    }
+
+    // update sensor status
+    function sensorStop($sensorID){
+        $query = "UPDATE sensors SET sensorStatus = 0 WHERE sensorID = ".$sensorID.";";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute();
     }
 
     // delete sensor from sensor list
@@ -152,22 +169,8 @@ class sensors{
         $stmt = $this->conn->prepare($query);
 
         if($stmt->execute()){
-            // while ($row = $stmt->fetch()){
-            //     // if(strcmp($row[0],"sensors")==0)continue;
-            //     $query = "DROP TABLE IF EXISTS ".$row[0];
-
-            //     $stmt = $this->conn->prepare($query);
-            //     $stmt->execute();
-
-            //     echo $row[0].",\n";
-            //     $query = "SHOW TABLES";
-            //     $stmt = $this->conn->prepare($query);
-            //     $stmt->execute();
-
-            // }
             $rows=$stmt->fetchAll();
             foreach ($rows as $row) {
-                // echo $row[0]."\n";
                 if(strcmp($row[0],"sensors")==0 ||
                     strcmp($row[0],"info")==0)continue;
                 $query = "DROP TABLE IF EXISTS ".$row[0];
@@ -175,10 +178,6 @@ class sensors{
                 $stmt = $this->conn->prepare($query);
                 $stmt->execute();
 
-                // echo $row[0].",\n";
-                // $query = "SHOW TABLES";
-                // $stmt = $this->conn->prepare($query);
-                // $stmt->execute();
             }
         }else{
             echo "Failed to initialize";
@@ -195,6 +194,14 @@ class sensors{
     // TEST ONLY
     // this function generats random data for each sensor on current time
     function generateData(){
+
+
+        $query = "SELECT status FROM info;";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        if($stmt->fetchColumn()==0)return false;
+
+
         $currentTime = time();
         $currentID;
         $currentData;
@@ -263,8 +270,14 @@ class sensors{
         $query = "INSERT INTO info SET stationID=".$stationID.", orderID = ".$order.";";
         // echo $query;
         $stmt = $this->conn->prepare($query);
-        if($stmt->execute())return true;
-        return false;
+        return $stmt->execute();
+    }
+
+    function changeOrderID($newID){
+
+        $query = "UPDATE info SET orderID = ".$newID.";";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute();
     }
 }
 ?>
