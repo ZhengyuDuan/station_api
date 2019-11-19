@@ -6,22 +6,22 @@ header("Content-Type: application/json; charset=UTF-8");
 include_once '../config/database.php';
 include_once '../objects/sensors.php';
  
-// instantiate database and sensors object
-$database = new Database();
-$db = $database->getConnection();
+echo "include";
+// $database = new Database();
+// $db = $database->getConnection();
 
-$sensors = new sensors($db);
-if($result = $sensors->getStatus()){
-    http_response_code(200);
-    echo json_encode($result);
-}
+// $sensors = new sensors($db);
+// if($result = $sensors->getStatus()){
+//     http_response_code(200);
+//     echo json_encode($result);
+// }
  
-else{
+// else{
  
-    http_response_code(404);
+//     http_response_code(404);
  
-    echo json_encode(
-        array("message" => "Unable to get infomation.")
-    );
-}
+//     echo json_encode(
+//         array("message" => "Unable to get infomation.")
+//     );
+// }
 ?>
