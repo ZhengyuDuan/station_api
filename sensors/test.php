@@ -7,10 +7,10 @@ include_once '../config/database.php';
 include_once '../objects/sensors.php';
  
 echo "include";
-// $database = new Database();
-// $db = $database->getConnection();
+$database = new Database();
+$db = $database->getConnection();
 
-// $sensors = new sensors($db);
+$sensors = new sensors($db);
 // if($result = $sensors->getStatus()){
 //     http_response_code(200);
 //     echo json_encode($result);
