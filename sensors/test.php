@@ -16,7 +16,8 @@ echo "connection";
 if($result = $sensors->getStatus()){
     http_response_code(200);
     echo json_encode($result);
-}else{
+}
+else{
  
     http_response_code(404);
  
