@@ -11,17 +11,19 @@ $database = new Database();
 $db = $database->getConnection();
 
 $sensors = new sensors($db);
-// if($result = $sensors->getStatus()){
-//     http_response_code(200);
-//     echo json_encode($result);
-// }
+echo "connection"
+$result;
+if($result = $sensors->getStatus()){
+    http_response_code(200);
+    echo json_encode($result);
+}
  
-// else{
+else{
  
-//     http_response_code(404);
+    http_response_code(404);
  
-//     echo json_encode(
-//         array("message" => "Unable to get infomation.")
-//     );
-// }
+    echo json_encode(
+        array("message" => "Unable to get infomation.")
+    );
+}
 ?>
