@@ -17,13 +17,13 @@ if($result = $sensors->getStatus()){
     http_response_code(200);
     echo json_encode($result);
 }
+echo "if statement";
+// else{
  
-else{
+//     http_response_code(404);
  
-    http_response_code(404);
- 
-    echo json_encode(
-        array("message" => "Unable to get infomation.")
-    );
-}
+//     echo json_encode(
+//         array("message" => "Unable to get infomation.")
+//     );
+// }
 ?>
