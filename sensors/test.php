@@ -1,5 +1,6 @@
 test
 <?php
+
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
  
@@ -23,4 +24,8 @@ else{
  
     echo json_encode(array("message" => "Unable to get infomation."));
 }
+if ( extension_loaded('pdo') ) {
+    echo "pdo support";
+}
+
 ?>
