@@ -12,7 +12,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 $sensors = new sensors($db);
-echo "connection";
+echo phpinfo();
 
 if($result = $sensors->getStatus()){
     http_response_code(200);
