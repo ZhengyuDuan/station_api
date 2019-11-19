@@ -11,8 +11,8 @@ $database = new Database();
 $db = $database->getConnection();
 
 $sensors = new sensors($db);
-echo "connection"
-$result;
+echo "connection";
+
 if($result = $sensors->getStatus()){
     http_response_code(200);
     echo json_encode($result);

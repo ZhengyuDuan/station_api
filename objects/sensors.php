@@ -1,3 +1,4 @@
+sensor file:
 <?php
 class sensors{
  
