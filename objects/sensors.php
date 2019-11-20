@@ -224,11 +224,11 @@ class sensors{
             // others have one value;
             $currentID = $row['sensorID']; 
             if($row['sensorType']==0){
-                $longitude = rand(10000,2000000)/10000;
-                $latitude = rand(10000,2000000)/10000;
+                $longitude = rand(331431,338934)/1000000;
+                $latitude = rand(-884717,-877522)/1000000;
                 $currentData = array(
-                    "longitude"=>$longitude,
-                    "latitude"=>$latitude
+                    "longitude"=>$longitude+37,
+                    "latitude"=>$latitude-121
                 );
             }else{
 

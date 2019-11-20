@@ -31,14 +31,14 @@
 	echo "<td>start</td>";
 	echo "<td>POST</td>";
 	echo "<td></td>";
-	echo "<td>Update a status of the edge station to running.</td>";
+	echo "<td>Update status of the edge station to running.</td>";
 	echo "</tr>";
 	//5 STOP
 	echo "<tr>";
 	echo "<td>stop</td>";
 	echo "<td>POST</td>";
 	echo "<td></td>";
-	echo "<td>Update a status of the edge station to stop.</td>";
+	echo "<td>Update status of the edge station to stop.</td>";
 	echo "</tr>";
 	//6 getSensorData
 	echo "<tr>";
