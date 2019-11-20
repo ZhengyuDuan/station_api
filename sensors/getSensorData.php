@@ -55,7 +55,7 @@ if(
  
 // tell the user data is incomplete
 else{
-    echo $data->sensorType;
+    // echo $data->sensorType;
     // set response code - 400 bad request
     http_response_code(400);
  
