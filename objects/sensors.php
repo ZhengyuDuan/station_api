@@ -79,7 +79,7 @@ class sensors{
             //create new table for new sensor;
             $query = "CREATE TABLE sensor_data_".$lastID."(time int not null, data varchar(256) not null, PRIMARY KEY (time));";
             $stmt = $this->conn->prepare($query);
-            echo $query;
+            // echo $query;
             return $stmt->execute();
         }
      
