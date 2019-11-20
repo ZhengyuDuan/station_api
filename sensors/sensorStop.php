@@ -32,7 +32,7 @@ if(
         http_response_code(201);
  
         // tell the user
-        echo json_encode(array("message" => "sensor ".$sensor->sensorID." started."));
+        echo json_encode(array("message" => "sensor ".$data->sensorID." stopped."));
     }
  
     // if unable to create the product, tell the user
