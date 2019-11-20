@@ -1,4 +1,17 @@
-test
+<!DOCTYPE html>
+<html>
+<head>
+	<title>test?</title>
+</head>
+<body>
+
 <?php
-phpinfo();
+if (extension_loaded('pdo')) 
+{
+	echo "success";
+}else{
+    dl('pdo.so');
+}
 ?>
+</body>
+</html>
