@@ -17,31 +17,12 @@ $db = $database->getConnection();
 $sensors = new sensors($db);
  
 
-if (extension_loaded('pdo')) 
-{
-	echo "success loaded pdo\n";
-}else{
-    dl('pdo.so');
-}
+// if (extension_loaded('pdo')) 
+// {
+// 	echo "success loaded pdo\n";
+// }else{
+//     dl('pdo.so');
+// }
+$sensors->start();
 
-
-// read products will be here
-// query products
-if($sensors->start()){
-    // set response code - 200 OK
-    http_response_code(200);
- 	echo "1";
-    echo json_encode(array("message" => "Station now Running."));
-}else{
- 
-    // set response code - 404 Not found
-    http_response_code(404);
- 	echo "2";
- 
-    // tell the user no products found
-    echo json_encode(
-        array("message" => "Failed.")
-    );
-}
-echo "3";
 ?>
