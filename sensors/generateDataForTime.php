@@ -15,7 +15,7 @@ $db = $database->getConnection();
 $sensor = new sensors($db);
 
 $data = json_decode(file_get_contents("php://input"));
-
+// echo json_encode($data);
 if(
     ($data->startTime=="0" || !empty($data->startTime)) &&
     ($data->endTime=="0" || !empty($data->endTime)) &&

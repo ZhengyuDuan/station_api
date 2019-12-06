@@ -255,6 +255,7 @@ class sensors{
     }
 
     function generateDataForTime($startTime, $endTime, $period){
+
         //CHECK STATION STATUS
         $query = "SELECT STATUS FROM INFO;";
         $stmt =  $this->conn->prepare($query);
@@ -264,6 +265,8 @@ class sensors{
             echo "Station down, unable to generate data";
             return ;
         }
+
+        $sensors = array();
 
         for($type = 0; $type < 6; $type ++){
             // CHECK IF SENSOR EXISTS
@@ -282,44 +285,53 @@ class sensors{
             $row = $stmt->fetch();
             if($row[0]==0)continue;
 
-
-
-
-            //SIMULATION DATA GENERATION
-            //START GENERATING DATA
-            echo "Attempting to generate data for type ".$type."...\n";
-            for($i =$startTime; $i<=$endTime; $i+=$period){
-                $this->generateDataByType($type,$i);
-            }   
-            // echo "Done.\n";
+            array_push($sensors,$type);
         }
+
+
+        for($i =$startTime; $i<=$endTime; $i+=$period){
+            $return = array();
+            //**************************************************************************
+            // initialize return result;
+            //**************************************************************************
+            $return["time"]=$i;
+            $return["sensors"] = array();
+            foreach ($sensors as $type) {
+            // echo "Attempting to generate data for type ".$type."...\n";
+            array_push($return["sensors"], json_decode($this->generateDataByType($type,$i),true));
+            }
+            // $this->curl();
+            echo json_encode($return);
+            echo "\n";
+        }   
+        
+        return true;
     }
 
     function generateDataByType($sensorType, $time){
     	switch($sensorType){
     		case 0:
     		// echo "Generating data for GPS Sensor at time ".$time;
-    		$this->generateGPSData($time);
-    		break;
+    		return $this->generateGPSData($time);
     		case 1:
     		// echo "Generating data for Speed sensor at time ".$time;
-            $this->generateSpeedData($time);
+            return $this->generateSpeedData($time);
     		break;
     		case 2:
     		// echo "Generating data for Temperature Sensor at time ".$time;
-    		$this->generateTempData($time);
+    		return $this->generateTempData($time);
             break;
     		case 3:
     		// echo "Generating data for Soil Moisture Sensor at time ".$time;
-    		$this->generatesoilMData($time);
+    		return $this->generatesoilMData($time);
             break;
     		case 4:
     		// echo "Generating data for Oxygen Sensor at time ".$time;
-    		$this->generateO2Data($time);
+    		return $this->generateO2Data($time);
             break;
     		case 5:
     		// echo "Generating data for Carbon Dioxide Sensor at time ".$time;
-    		$this->generateCO2Data($time);
+    		return $this->generateCO2Data($time);
             break;
     		default:
     		break;
@@ -329,6 +341,11 @@ class sensors{
 
     //type 0;
     function generateGPSData($time){
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
+
         //**************************************************************************
         // sensor type :0   -   GPS sensor
         // sensor data range:   longitude: 37.331431,37.338934
@@ -340,6 +357,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
 	    //get last row infomation
 	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
 	    $stmt = $this->conn->prepare($query);
@@ -361,7 +379,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
         	// echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -380,7 +398,7 @@ class sensors{
 		    // random a number
 		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
 		    // make it go as a linear
-		    $newLatitude = ($oldLatitude+1)/1000000;
+		    $newLatitude = ($oldLatitude-1)/1000000;
 		    // echo "\nLa:\t".$newLatitude;
 
             $currentData = array(
@@ -391,15 +409,22 @@ class sensors{
 		    $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-		    // echo "\n".$query;
-		    $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
         }
+
+        return json_encode($return);
+        
     }
 
     //type 1;
     function generateSpeedData($time){
     	//get sensorID of sensorType speed
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
         $MIN = 20.0;
         $MAX = 50.0;
         $RANGE = 3.0;
@@ -414,6 +439,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
 	    //get last row infomation
 	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
 	    $stmt = $this->conn->prepare($query);
@@ -436,7 +462,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
         	// echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -460,15 +486,20 @@ class sensors{
 		    $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-		    // echo "\n".$query;
-		    $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
         }
+        return json_encode($return);
     }
 
     //type 2;
     function generateTempData($time){
         //get sensorID of sensorType speed
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
         $MIN = 20.0;
         $MAX = 50.0;
         $RANGE = 3.0;
@@ -483,6 +514,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
         //get last row infomation
         $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
         $stmt = $this->conn->prepare($query);
@@ -505,7 +537,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -529,16 +561,21 @@ class sensors{
             $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-            // echo "\n".$query;
-            $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
         }
+        return json_encode($return);
         
     }
 
     //type 3;
     function generatesoilMData($time){
         //get sensorID of sensorType speed
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
         $MIN = 20.0;
         $MAX = 50.0;
         $RANGE = 3.0;
@@ -553,6 +590,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
         //get last row infomation
         $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
         $stmt = $this->conn->prepare($query);
@@ -575,7 +613,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -599,16 +637,21 @@ class sensors{
             $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-            // echo "\n".$query;
-            $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
         }
         
+        return json_encode($return);
     }
 
     //type 4;
     function generateO2Data($time){
         //get sensorID of sensorType speed
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
         $MIN = 20.0;
         $MAX = 50.0;
         $RANGE = 3.0;
@@ -623,6 +666,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
         //get last row infomation
         $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
         $stmt = $this->conn->prepare($query);
@@ -645,7 +689,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -669,16 +713,21 @@ class sensors{
             $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-            // echo "\n".$query;
-            $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
         }
         
+        return json_encode($return);
     }
 
     //type 5;
     function generateCO2Data($time){
         //get sensorID of sensorType speed
+        $return = array();
+        //**************************************************************************
+        // initialize return result;
+        //**************************************************************************
         $MIN = 20.0;
         $MAX = 50.0;
         $RANGE = 3.0;
@@ -693,6 +742,7 @@ class sensors{
         $stmt->execute();
         $row=$stmt->fetch();
         $currentID = $row[0];
+        $return["id"]=$currentID;
         //get last row infomation
         $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
         $stmt = $this->conn->prepare($query);
@@ -715,7 +765,7 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             if($stmt->execute()){
-                // echo "inserted first row";
+                $return["data"]=json_decode($jsonData);
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
@@ -740,10 +790,12 @@ class sensors{
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
             // echo "\n".$query;
-            $stmt->execute();
-            // if($stmt->execute())echo "\ninserted second row";
+            if($stmt->execute()){
+                $return["data"]=json_decode($jsonData);
+            }
+               
         }
-        
+        return json_encode($return);
     }
 
 
@@ -752,38 +804,24 @@ class sensors{
         // this function call and sending data to another DB
         //TODO: following codes are copy from web, needs modify.
         //**************************************************************************
-        /*
-        //extract data from the post
-        //set POST variables
-        $url = 'http://domain.com/get-post.php';
-        $fields = array(
-            'lname' => urlencode($_POST['last_name']),
-            'fname' => urlencode($_POST['first_name']),
-            'title' => urlencode($_POST['title']),
-            'company' => urlencode($_POST['institution']),
-            'age' => urlencode($_POST['age']),
-            'email' => urlencode($_POST['email']),
-            'phone' => urlencode($_POST['phone'])
-        );
-
-        //url-ify the data for the POST
-        foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
-        rtrim($fields_string, '&');
-
-        //open connection
-        $ch = curl_init();
-
-        //set the url, number of POST vars, POST data
-        curl_setopt($ch,CURLOPT_URL, $url);
-        curl_setopt($ch,CURLOPT_POST, count($fields));
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
-
-        //execute post
+        $data = array('stationID' => '1',
+                    'stationType' => '2',
+                    'orderID' => '23231231233',
+                    'GPSID' => '2'
+                );                                                                    
+        $data_string = json_encode($data);                                                                                   
+                                                                                                                             
+        $ch = curl_init('http://localhost:8888/sensors/initial.php');                                                                      
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+            'Content-Type: application/json',                                                                                
+            'Content-Length: ' . strlen($data_string))                                                                       
+        );                                                                                                                   
+                                                                                                                             
         $result = curl_exec($ch);
-
-        //close connection
-        curl_close($ch);
-        */
+        // echo $result;
     }
 
     function getDataByTime($id,$t1,$t2){
