@@ -80,6 +80,12 @@ class sensors{
     }
 
     function changeSensorStatus($sensorID, $status){
+
+        $url = "sensor/".$sensorID;
+        $data = array("status"=>$status);
+        $this->postcurl($url,json_encode($data));
+
+
         // CHECK IF SENSOR EXISTS
         $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
         $stmt = $this->conn->prepare($query);
@@ -185,17 +191,17 @@ class sensors{
         //create info table if not exists;
         $query = "CREATE TABLE IF NOT EXISTS info(stationID int not null, stationType int not null, orderID varchar(30), status int not null DEFAULT 1 ,PRIMARY KEY (stationID));";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        if($stmt->execute())echo "info table created \n";
 
         //create sensors table if not exists;
         $query = "CREATE TABLE IF NOT EXISTS sensors(sensorID int not null, sensorType int not null, sensorStatus int not null DEFAULT 1, PRIMARY KEY (sensorID));";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        if($stmt->execute())echo "sensors table created \n";
 
         //insert infomation into info table
         $query = "INSERT INTO INFO SET STATIONID = ".$stationID.", stationType = ".$stationType.", orderID= ".$orderID.";";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        if($stmt->execute())echo "info inserted  \n";
 
         $this->register($GPSID, 0);
         return true;
