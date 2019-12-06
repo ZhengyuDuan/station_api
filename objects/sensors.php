@@ -199,7 +199,7 @@ class sensors{
         if($stmt->execute())echo "sensors table created \n";
 
         //insert infomation into info table
-        $query = "INSERT INTO INFO SET STATIONID = ".$stationID.", stationType = ".$stationType.", orderID= ".$orderID.";";
+        $query = "INSERT INTO info SET stationID = ".$stationID.", stationType = ".$stationType.", orderID= ".$orderID.";";
         $stmt = $this->conn->prepare($query);
         echo $query;
         if($stmt->execute())echo "info inserted  \n";
