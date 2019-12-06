@@ -274,7 +274,7 @@ class sensors{
     function generateDataForTime($startTime, $endTime, $period){
 
         //CHECK STATION STATUS
-        $query = "SELECT STATUS FROM INFO;";
+        $query = "SELECT status FROM info;";
         $stmt =  $this->conn->prepare($query);
         $stmt -> execute();
         $row = $stmt->fetch();
@@ -287,7 +287,7 @@ class sensors{
 
         for($type = 0; $type < 6; $type ++){
             // CHECK IF SENSOR EXISTS
-            $query = "SELECT COUNT(SENSORTYPE) FROM SENSORS WHERE SENSORTYPE = ".$type.";";
+            $query = "SELECT COUNT(sensorType) FROM sensors WHERE sensorType = ".$type.";";
             $stmt =  $this->conn->prepare($query);
             $stmt -> execute();
             $row = $stmt->fetch();
@@ -296,7 +296,7 @@ class sensors{
             }
 
             // CHECK SENSOR STATUS
-            $query = "SELECT SENSORSTATUS FROM SENSORS WHERE SENSORTYPE = ".$type.";";
+            $query = "SELECT sensorStatus FROM sensors WHERE sensorType = ".$type.";";
             $stmt =  $this->conn->prepare($query);
             $stmt -> execute();
             $row = $stmt->fetch();
@@ -379,7 +379,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
 	    //get last row infomation
-	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+	    $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
 	    $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -403,7 +403,7 @@ class sensors{
             }
         }else{
         	// echo "\nLAST INSERTED ID: ".$lastID."\n";
-        	$query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+        	$query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
 		    $stmt = $this->conn->prepare($query);
 		    $stmt->execute();
 		    $row=$stmt->fetch();
@@ -461,7 +461,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
 	    //get last row infomation
-	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+	    $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
 	    $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -486,7 +486,7 @@ class sensors{
             }
         }else{
         	// echo "\nLAST INSERTED ID: ".$lastID."\n";
-        	$query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+        	$query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
 		    $stmt = $this->conn->prepare($query);
 		    $stmt->execute();
 		    $row=$stmt->fetch();
@@ -536,7 +536,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
         //get last row infomation
-        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -561,7 +561,7 @@ class sensors{
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
-            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             $row=$stmt->fetch();
@@ -612,7 +612,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
         //get last row infomation
-        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -637,7 +637,7 @@ class sensors{
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
-            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             $row=$stmt->fetch();
@@ -688,7 +688,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
         //get last row infomation
-        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -713,7 +713,7 @@ class sensors{
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
-            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             $row=$stmt->fetch();
@@ -764,7 +764,7 @@ class sensors{
         $currentID = $row[0];
         $return["id"]=$currentID;
         //get last row infomation
-        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $query = "SELECT MAX(ID) FROM sensor_data_".$currentID;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -789,7 +789,7 @@ class sensors{
             }
         }else{
             // echo "\nLAST INSERTED ID: ".$lastID."\n";
-            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $query = "SELECT data FROM sensor_data_".$currentID." WHERE ID = ".$lastID.";";
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
             $row=$stmt->fetch();
@@ -839,6 +839,7 @@ class sensors{
                                                                                                                              
         $result = curl_exec($ch);
         echo $result;
+        echo "\n";
     }
 
     function getDataByTime($id,$t1,$t2){
@@ -851,7 +852,7 @@ class sensors{
         $result['sensorID']=$this->sensorID;
         $result['datas'] = array();
         $currentSensorID=htmlspecialchars(strip_tags($this->sensorID));
-        $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE TIME>".$t1." AND TIME<".$t2." ORDER BY time DESC ;";
+        $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE time>".$t1." AND time<".$t2." ORDER BY time DESC ;";
         $stmt = $this->conn->prepare($query);
         
         if($stmt->execute()){
