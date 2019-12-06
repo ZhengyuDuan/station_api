@@ -22,16 +22,15 @@ $data = json_decode(file_get_contents("php://input"));
  
 // make sure data is not empty
 if(
-    // !empty($data->sensorID) &&
-    !empty($data->sensorID)
-    // !empty($data->sensorStatus)
+    ($data->sensorID=="0" || !empty($data->sensorID))&&
+    !empty($data->startTime)&&
+    !empty($data->endTime)
 ){
-    if($result = $sensor->getSensorData()){
  
-        // set response code - 201 created
+    $sensor->sensorID = $data->sensorID;
+    if($result = $sensor->getDataByTime($data->sensorID,$data->startTime, $data->endTime)){
+ 
         http_response_code(200);
- 
-        // tell the user
         echo json_encode($result);
     }
  
@@ -42,7 +41,7 @@ if(
         http_response_code(503);
  
         // tell the user
-        echo json_encode(array("message" => "Unable to register sensor."));
+        echo json_encode(array("message" => "Unable to get datas."));
     }
 }
  

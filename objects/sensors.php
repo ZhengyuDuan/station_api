@@ -44,69 +44,61 @@ class sensors{
     */
     function getStationStatus(){
         $query = "SELECT status from info;" ;
-     
-        // prepare query statement
         $stmt = $this->conn->prepare($query);
-     
-        // execute query
         $stmt->execute();
-     
         return $stmt->fetchColumn();
     }
 
     function changeStationStatus($newStatus){
         $query = "UPDATE INFO SET STATUS = ".$newStatus.";" ;
-     
         $stmt = $this->conn->prepare($query);
-     
         return $stmt->execute();
     }
 
     function getSensorStatus($sensorID){
         // CHECK IF SENSOR EXISTS
-        // $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
-        // $stmt = $this->conn->prepare($query);
-        // $stmt->execute();
-        // $count = $stmt->fetchColumn();
-        $query = "SELECT SENSORSTATUS from SENSORS WHERE SENSORID = ".$sensorID.";" ;
-        // prepare query statement
+        $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
         $stmt = $this->conn->prepare($query);
-     
-        // execute query
         $stmt->execute();
-     
+        $count = $stmt->fetchColumn();
+        if($count == 0)return false;
+        // PROCESS
+        $query = "SELECT SENSORSTATUS from SENSORS WHERE SENSORID = ".$sensorID.";" ;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
         return $stmt->fetchColumn();
     }
 
     function changeSensorStatus($sensorID, $status){
-        $query = "UPDATE SENSORS SET SENSORSTATUS = ".$status." WHERE SENSORID = ".$sensorID.";" ;
-     
+        // CHECK IF SENSOR EXISTS
+        $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
         $stmt = $this->conn->prepare($query);
-     
+        $stmt->execute();
+        $count = $stmt->fetchColumn();
+        if($count == 0)return false;
+        //PROCESS
+        $query = "UPDATE SENSORS SET SENSORSTATUS = ".$status." WHERE SENSORID = ".$sensorID.";" ;
+        $stmt = $this->conn->prepare($query);
         return $stmt->execute();
-
     }
+
     // get one sensor data history,
-    // retrunes last 10 data
+    // retrunes last data
     function getSensorData(){
-        $amount = 10;
+        $amount = 1;
         $result = array();
-        $result['sensorData']=array();
-        $sensors_item = array();
+        $result['sensorID']=$this->sensorID;
 
         $currentSensorID=htmlspecialchars(strip_tags($this->sensorID));
-        $query = "SELECT * FROM sensor_data_".$currentSensorID." ORDER BY time DESC LIMIT 10;";
+        $query = "SELECT * FROM sensor_data_".$currentSensorID." ORDER BY time DESC LIMIT ".$amount.";";
         $stmt = $this->conn->prepare($query);
         if($stmt->execute()){
-            $rows = $stmt->fetchAll();
-            foreach ($rows as $row) {
-                $sensors_item['number']=$amount;
-                $sensors_item['time']=$row['time'];
-                $sensors_item['data']=json_decode($row['data'],true);
-                array_push($result["sensorData"], $sensors_item);
-                $amount--;
-            }
+            $row = $stmt->fetch();
+            $result['time']=$row['time'];
+            $result['data']=json_decode($row['data']);
+
             return $result;
+
         }
         return false;
     }
@@ -299,7 +291,7 @@ class sensors{
             for($i =$startTime; $i<=$endTime; $i+=$period){
                 $this->generateDataByType($type,$i);
             }   
-            echo "Done.\n";
+            // echo "Done.\n";
         }
     }
 
@@ -311,23 +303,23 @@ class sensors{
     		break;
     		case 1:
     		// echo "Generating data for Speed sensor at time ".$time;
-            // $this->generateSpeedData($time);
+            $this->generateSpeedData($time);
     		break;
     		case 2:
     		// echo "Generating data for Temperature Sensor at time ".$time;
-    		// $this->generateTempData($time);
+    		$this->generateTempData($time);
             break;
     		case 3:
     		// echo "Generating data for Soil Moisture Sensor at time ".$time;
-    		// $this->generatesoilMData($time);
+    		$this->generatesoilMData($time);
             break;
     		case 4:
     		// echo "Generating data for Oxygen Sensor at time ".$time;
-    		// $this->generateO2Data($time);
+    		$this->generateO2Data($time);
             break;
     		case 5:
     		// echo "Generating data for Carbon Dioxide Sensor at time ".$time;
-    		// $this->generateCO2Data($time);
+    		$this->generateCO2Data($time);
             break;
     		default:
     		break;
@@ -408,13 +400,16 @@ class sensors{
     //type 1;
     function generateSpeedData($time){
     	//get sensorID of sensorType speed
-
+        $MIN = 20.0;
+        $MAX = 50.0;
+        $RANGE = 3.0;
+        $sensorType = 1;
         //**************************************************************************
         // sensor type :1   -   speed sensor
         // sensor data range:   20-50
         // sensor data random range: +-3
         //**************************************************************************
-    	$query = "SELECT sensorID FROM sensors WHERE sensorType = 1;";
+    	$query = "SELECT sensorID FROM sensors WHERE sensorType = ".$sensorType.";";
     	$stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row=$stmt->fetch();
@@ -432,14 +427,17 @@ class sensors{
         	//*******************************************************************************
         	//generate new random value
         	//*******************************************************************************
-        	$value = rand(0,100)/100+10;
+        	$value = rand($MIN*10,$MAX*10)/10;
+            // echo "first value: ".$value;
             $currentData = array(
                 "value"=>$value
             );
             $jsonData = json_encode($currentData);
             $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
             $stmt = $this->conn->prepare($query);
-            if($stmt->execute())echo "inserted first row";
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
         }else{
         	// echo "\nLAST INSERTED ID: ".$lastID."\n";
         	$query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
@@ -453,7 +451,7 @@ class sensors{
 		    $oldValue = $oldJSONData["value"];
 
 
-		    $newValue = rand(max(10,$oldValue-1),min(11,$oldValue+1));
+		    $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
 
             $currentData = array(
                 "value"=>$newValue
@@ -470,21 +468,281 @@ class sensors{
 
     //type 2;
     function generateTempData($time){
+        //get sensorID of sensorType speed
+        $MIN = 20.0;
+        $MAX = 50.0;
+        $RANGE = 3.0;
+        $sensorType = 2;
+        //**************************************************************************
+        // sensor type :1   -   speed sensor
+        // sensor data range:   20-50
+        // sensor data random range: +-3
+        //**************************************************************************
+        $query = "SELECT sensorID FROM sensors WHERE sensorType = ".$sensorType.";";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+        //get last row infomation
+        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+            //*******************************************************************************
+            //generate new random value
+            //*******************************************************************************
+            $value = rand($MIN*10,$MAX*10)/10;
+            // echo "first value: ".$value;
+            $currentData = array(
+                "value"=>$value
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
+        }else{
+            // echo "\nLAST INSERTED ID: ".$lastID."\n";
+            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $row=$stmt->fetch();
+            $lastData = $row[0];
+            // echo $lastData;
+            //get old data
+            $oldJSONData = json_decode($lastData,true);
+            $oldValue = $oldJSONData["value"];
+
+
+            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+
+            $currentData = array(
+                "value"=>$newValue
+            );
+
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            // echo "\n".$query;
+            $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
         
     }
 
     //type 3;
     function generatesoilMData($time){
+        //get sensorID of sensorType speed
+        $MIN = 20.0;
+        $MAX = 50.0;
+        $RANGE = 3.0;
+        $sensorType = 3;
+        //**************************************************************************
+        // sensor type :1   -   speed sensor
+        // sensor data range:   20-50
+        // sensor data random range: +-3
+        //**************************************************************************
+        $query = "SELECT sensorID FROM sensors WHERE sensorType = ".$sensorType.";";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+        //get last row infomation
+        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+            //*******************************************************************************
+            //generate new random value
+            //*******************************************************************************
+            $value = rand($MIN*10,$MAX*10)/10;
+            // echo "first value: ".$value;
+            $currentData = array(
+                "value"=>$value
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
+        }else{
+            // echo "\nLAST INSERTED ID: ".$lastID."\n";
+            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $row=$stmt->fetch();
+            $lastData = $row[0];
+            // echo $lastData;
+            //get old data
+            $oldJSONData = json_decode($lastData,true);
+            $oldValue = $oldJSONData["value"];
+
+
+            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+
+            $currentData = array(
+                "value"=>$newValue
+            );
+
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            // echo "\n".$query;
+            $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
         
     }
 
     //type 4;
     function generateO2Data($time){
+        //get sensorID of sensorType speed
+        $MIN = 20.0;
+        $MAX = 50.0;
+        $RANGE = 3.0;
+        $sensorType = 4;
+        //**************************************************************************
+        // sensor type :1   -   speed sensor
+        // sensor data range:   20-50
+        // sensor data random range: +-3
+        //**************************************************************************
+        $query = "SELECT sensorID FROM sensors WHERE sensorType = ".$sensorType.";";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+        //get last row infomation
+        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+            //*******************************************************************************
+            //generate new random value
+            //*******************************************************************************
+            $value = rand($MIN*10,$MAX*10)/10;
+            // echo "first value: ".$value;
+            $currentData = array(
+                "value"=>$value
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
+        }else{
+            // echo "\nLAST INSERTED ID: ".$lastID."\n";
+            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $row=$stmt->fetch();
+            $lastData = $row[0];
+            // echo $lastData;
+            //get old data
+            $oldJSONData = json_decode($lastData,true);
+            $oldValue = $oldJSONData["value"];
+
+
+            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+
+            $currentData = array(
+                "value"=>$newValue
+            );
+
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            // echo "\n".$query;
+            $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
         
     }
 
     //type 5;
     function generateCO2Data($time){
+        //get sensorID of sensorType speed
+        $MIN = 20.0;
+        $MAX = 50.0;
+        $RANGE = 3.0;
+        $sensorType = 5;
+        //**************************************************************************
+        // sensor type :1   -   speed sensor
+        // sensor data range:   20-50
+        // sensor data random range: +-3
+        //**************************************************************************
+        $query = "SELECT sensorID FROM sensors WHERE sensorType = ".$sensorType.";";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+        //get last row infomation
+        $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+            //*******************************************************************************
+            //generate new random value
+            //*******************************************************************************
+            $value = rand($MIN*10,$MAX*10)/10;
+            // echo "first value: ".$value;
+            $currentData = array(
+                "value"=>$value
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
+        }else{
+            // echo "\nLAST INSERTED ID: ".$lastID."\n";
+            $query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $row=$stmt->fetch();
+            $lastData = $row[0];
+            // echo $lastData;
+            //get old data
+            $oldJSONData = json_decode($lastData,true);
+            $oldValue = $oldJSONData["value"];
+
+
+            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+
+            $currentData = array(
+                "value"=>$newValue
+            );
+
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            // echo "\n".$query;
+            $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
         
     }
 
@@ -528,11 +786,32 @@ class sensors{
         */
     }
 
-    function getDataBySensorID($id,$t1,$t2){
+    function getDataByTime($id,$t1,$t2){
         //**************************************************************************
         // returns sensor data as json between two timestamp.
         //**************************************************************************
 
+        $amount = 1;
+        $result = array();
+        $result['sensorID']=$this->sensorID;
+        $result['datas'] = array();
+        $currentSensorID=htmlspecialchars(strip_tags($this->sensorID));
+        $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE TIME>".$t1." AND TIME<".$t2." ORDER BY time DESC ;";
+        $stmt = $this->conn->prepare($query);
+        
+        if($stmt->execute()){
+            $rows=$stmt->fetchAll();
+            $arr_item=array();
+            foreach ($rows as $row) {
+                $arr_item["time"]=$row["time"];
+                $arr_item["data"]=json_decode($row["data"]);
+
+                array_push($result["datas"], $arr_item);
+            }
+
+            return $result;
+        }
+        return false;
     }
 }
 ?>

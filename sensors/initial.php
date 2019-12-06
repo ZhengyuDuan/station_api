@@ -16,7 +16,7 @@ $db = $database->getConnection();
 $sensors = new sensors($db);
 $data = json_decode(file_get_contents("php://input"));
 
-// echo ($data->stationID)==0;
+// echo json_encode($data);
 if(
     ($data->stationID=="0" || !empty($data->stationID)) &&
     ($data->stationType=="0" || !empty($data->stationType)) &&
@@ -28,7 +28,7 @@ if(
     if($sensors->initial($data->stationID,$data->stationType,$data->orderID,$data->GPSID)){
     // echo "f";
         // set response code - 201 created
-        http_response_code(201);
+        http_response_code(200);
  
         // tell the user
         echo json_encode(array("message" => "Station initialized."));

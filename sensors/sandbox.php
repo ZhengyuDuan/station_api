@@ -15,7 +15,8 @@ $db = $database->getConnection();
 // initialize object
 $sensors = new sensors($db);
  
-// $sensors->generateDataForTime(100,200,2);
-echo "..";
-echo $sensors->changeSensorStatus(1,4);
+$sensors->generateDataForTime(100,200,2);
+// echo "..";
+// $sensors->generateSpeedData(12323);
+// echo $sensors->changeSensorStatus(1,4);
 ?>

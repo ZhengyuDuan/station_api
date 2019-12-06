@@ -6,10 +6,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
  
-// get database connection
 include_once '../config/database.php';
- 
-// instantiate product object
 include_once '../objects/sensors.php';
  
 $database = new Database();
@@ -17,42 +14,33 @@ $db = $database->getConnection();
  
 $sensor = new sensors($db);
 
-// get posted data
 $data = json_decode(file_get_contents("php://input"));
- 
-// make sure data is not empty
+
 if(
-    // !empty($data->sensorID) &&
-    !empty($data->sensorID)
-    // !empty($data->sensorStatus)
+    ($data->status=="0" || !empty($data->status)) 
 ){
-    if($result = $sensor->getSensorData()){
+    if($data->sensorType <= -1 || $data->sensorType>3){
+
+        http_response_code(503);
+        echo json_encode(array("message" => "Unable to change Station Status, input wrong."));
+    }else if($sensor->changeStationStatus($data->status)){
  
-        // set response code - 201 created
         http_response_code(200);
- 
-        // tell the user
-        echo json_encode($result);
+        echo json_encode(array("message" => "Station status changed."));
     }
- 
-    // if unable to create the product, tell the user
+
     else{
  
-        // set response code - 503 service unavailable
         http_response_code(503);
- 
-        // tell the user
-        echo json_encode(array("message" => "Unable to register sensor."));
+        echo json_encode(array("message" => "Unable to change status."));
     }
 }
  
 // tell the user data is incomplete
 else{
-    // echo $data->sensorType;
-    // set response code - 400 bad request
     http_response_code(400);
  
     // tell the user
-    echo json_encode(array("message" => "Data is incomplete."));
+    echo json_encode(array("message" => "Unable to process request. Data is incomplete."));
 }
 ?>
