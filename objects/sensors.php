@@ -50,7 +50,7 @@ class sensors{
     }
 
     function changeStationStatus($newStatus){
-        $query = "SELECT STATIONID FROM INFO";
+        $query = "SELECT stationID FROM info";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $id = $stmt->fetchColumn();
@@ -60,20 +60,20 @@ class sensors{
         $this->postcurl($url,json_encode($data));
 
 
-        $query = "UPDATE INFO SET STATUS = ".$newStatus.";" ;
+        $query = "UPDATE info SET status = ".$newStatus.";" ;
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
     }
 
     function getSensorStatus($sensorID){
         // CHECK IF SENSOR EXISTS
-        $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
+        $query = "SELECT COUNT(*) FROM sensors WHERE sensorID = ".$sensorID.";";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $count = $stmt->fetchColumn();
         if($count == 0)return false;
         // PROCESS
-        $query = "SELECT SENSORSTATUS from SENSORS WHERE SENSORID = ".$sensorID.";" ;
+        $query = "SELECT sensorStatus from sensors WHERE sensorID = ".$sensorID.";" ;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchColumn();
@@ -87,13 +87,13 @@ class sensors{
 
 
         // CHECK IF SENSOR EXISTS
-        $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
+        $query = "SELECT COUNT(*) FROM sensors WHERE sensorID = ".$sensorID.";";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $count = $stmt->fetchColumn();
         if($count == 0)return false;
         //PROCESS
-        $query = "UPDATE SENSORS SET SENSORSTATUS = ".$status." WHERE SENSORID = ".$sensorID.";" ;
+        $query = "UPDATE sensors SET sensorStatus = ".$status." WHERE sensorID = ".$sensorID.";" ;
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
     }
@@ -122,7 +122,7 @@ class sensors{
     // register new sensor in this edge station
     function register($sensorID, $sensorType){
         //determine if same sensor type exists;
-        $query = "SELECT COUNT(SENSORTYPE) FROM SENSORS WHERE SENSORTYPE = ".$sensorType.";";
+        $query = "SELECT COUNT(sensorType) FROM sensors WHERE sensorType = ".$sensorType.";";
         $stmt =  $this->conn->prepare($query);
         $stmt -> execute();
         $row = $stmt->fetch();
