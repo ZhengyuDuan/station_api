@@ -50,6 +50,16 @@ class sensors{
     }
 
     function changeStationStatus($newStatus){
+        $query = "SELECT STATIONID FROM INFO";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+        // echo $id;
+        $url = "machine/".$id;
+        $data = array("status"=>$newStatus);
+        $this->postcurl($url,json_encode($data));
+
+
         $query = "UPDATE INFO SET STATUS = ".$newStatus.";" ;
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
@@ -283,7 +293,10 @@ class sensors{
             $stmt =  $this->conn->prepare($query);
             $stmt -> execute();
             $row = $stmt->fetch();
-            if($row[0]==0)continue;
+            if($row[0]==0 || //turn off
+                $row[0]==4 || // inactive
+                $row[0]==5  // maintainence 
+                )continue;
 
             array_push($sensors,$type);
         }
@@ -799,29 +812,26 @@ class sensors{
     }
 
 
-    function curlcall($url, $data){
+    function postcurl($url, $data){
         //**************************************************************************
         // this function call and sending data to another DB
         //TODO: following codes are copy from web, needs modify.
         //**************************************************************************
-        $data = array('stationID' => '1',
-                    'stationType' => '2',
-                    'orderID' => '23231231233',
-                    'GPSID' => '2'
-                );                                                                    
-        $data_string = json_encode($data);                                                                                   
-                                                                                                                             
-        $ch = curl_init('http://localhost:8888/sensors/initial.php');                                                                      
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-            'Content-Type: application/json',                                                                                
-            'Content-Length: ' . strlen($data_string))                                                                       
-        );                                                                                                                   
+        // $data = array(
+        //     "status"=>1);                                                               
+        $data_string = json_encode($data);
+        $API_URL = "http://xckang.com/api/public/".$url;
+        $ch = curl_init($API_URL);                
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");               
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                  
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                       
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(                               
+            'Content-Type: application/json',                                              
+            'Content-Length: ' . strlen($data_string))                                 
+        );                                            
                                                                                                                              
         $result = curl_exec($ch);
-        // echo $result;
+        echo $result;
     }
 
     function getDataByTime($id,$t1,$t2){

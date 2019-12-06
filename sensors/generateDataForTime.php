@@ -30,7 +30,7 @@ if(
         );
     }else if($result = $sensor->generateDataForTime($data->startTime,$data->endTime, $data->interval)){
 
-        http_response_code(201);
+        http_response_code(200);
         echo json_encode(
             array("message" => "Data generated.")
         );

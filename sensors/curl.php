@@ -4,14 +4,11 @@
         //TODO: following codes are copy from web, needs modify.
         //**************************************************************************
         
-$data = array('stationID' => '1',
-            'stationType' => '2',
-            'orderID' => '23231231233',
-            'GPSID' => '2'
-        );                                                                    
+$data = array(
+    "status"=>1);                                                               
 $data_string = json_encode($data);                                                                                   
                                                                                                                      
-$ch = curl_init('http://localhost:8888/sensors/initial.php');                                                                      
+$ch = curl_init('http://xckang.com/api/public/sensor/25');                                                                      
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
 curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
@@ -23,3 +20,13 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 $result = curl_exec($ch);
 echo $result;
 ?>
+
+
+        $query = "SELECT STATIONID FROM INFO";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+        echo $id;
+        $url = "machine/".$id;
+        $data = array("status"=>$newStatus);
+        $this->postcurl($url,json_encode($data));

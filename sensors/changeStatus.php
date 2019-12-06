@@ -19,8 +19,7 @@ $data = json_decode(file_get_contents("php://input"));
 if(
     ($data->status=="0" || !empty($data->status)) 
 ){
-    if($data->sensorType <= -1 || $data->sensorType>3){
-
+    if($data->status <= -1 || $data->status>3){
         http_response_code(503);
         echo json_encode(array("message" => "Unable to change Station Status, input wrong."));
     }else if($sensor->changeStationStatus($data->status)){
