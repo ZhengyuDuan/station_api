@@ -1,4 +1,12 @@
 <?php
+/*
+GPS sensor
+Speed sensor
+Temperature Sensor
+soil Moisture sensor
+Oxygen sensor
+Carbon Dioxide Sensor
+*/
 class sensors{
  
     // database connection and table name
@@ -18,8 +26,6 @@ class sensors{
     // get all infomation for sensor list.
     // TODO: add sensor newset data in returned values;
     function readSensors(){
-        // echo time();
-        // select all query
         $query = "SELECT sensorID,sensorType,sensorStatus FROM
                     " . $this->table_name ;
      
@@ -32,7 +38,11 @@ class sensors{
         return $stmt;
     }
 
-    function getStatus(){
+    /*
+    *   get station status
+    *   return status from table info 
+    */
+    function getStationStatus(){
         $query = "SELECT status from info;" ;
      
         // prepare query statement
@@ -44,54 +54,38 @@ class sensors{
         return $stmt->fetchColumn();
     }
 
-    // register new sensor in this edge station
-    function register(){
-
-        // query to insert record
-        $query = "INSERT INTO
-                    " . $this->table_name . "
-                SET
-                    sensorType=:sensorType";
-     // prepare query
-        $stmt = $this->conn->prepare($query);
-        // echo htmlspecialchars(strip_tags($this->sensorStatus));
-        // echo $query;
-        // sanitize
-        $this->sensorID=1;
-        $this->sensorType=htmlspecialchars(strip_tags($this->sensorType));
-        $this->sensorStatus=1;
-
-        
-        // bind values
-        // $stmt->bindParam(":sensorID", $this->sensorID);
-        $stmt->bindParam(":sensorType", $this->sensorType);
-        // $stmt->bindParam(":sensorStatus", $this->sensorStatus);
-        // print"$stmt";
-        // execute query
-        if($stmt->execute()){
-
-            //get last inserted sensorID;
-            $query = "SELECT LAST_INSERT_ID()";
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();               
-            $lastID = $stmt->fetchColumn();
-
-            //create new table for new sensor;
-            $query = "CREATE TABLE sensor_data_".$lastID."(time int not null, data varchar(256) not null, PRIMARY KEY (time));";
-            $stmt = $this->conn->prepare($query);
-            // echo $query;
-            return $stmt->execute();
-        }
+    function changeStationStatus($newStatus){
+        $query = "UPDATE INFO SET STATUS = ".$newStatus.";" ;
      
-        return false;
+        $stmt = $this->conn->prepare($query);
+     
+        return $stmt->execute();
     }
 
-    // read one specific sensor from sensor list in this edge station
-    // this function returns current/lastest data from database
-    // or request(in demo case, generate one) current data and return, also stores into db
-    function readOne(){
+    function getSensorStatus($sensorID){
+        // CHECK IF SENSOR EXISTS
+        // $query = "SELECT COUNT(*) FROM SENSORS WHERE SENSORID = ".$sensorID.";";
+        // $stmt = $this->conn->prepare($query);
+        // $stmt->execute();
+        // $count = $stmt->fetchColumn();
+        $query = "SELECT SENSORSTATUS from SENSORS WHERE SENSORID = ".$sensorID.";" ;
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+     
+        // execute query
+        $stmt->execute();
+     
+        return $stmt->fetchColumn();
     }
 
+    function changeSensorStatus($sensorID, $status){
+        $query = "UPDATE SENSORS SET SENSORSTATUS = ".$status." WHERE SENSORID = ".$sensorID.";" ;
+     
+        $stmt = $this->conn->prepare($query);
+     
+        return $stmt->execute();
+
+    }
     // get one sensor data history,
     // retrunes last 10 data
     function getSensorData(){
@@ -117,51 +111,50 @@ class sensors{
         return false;
     }
 
-    // get history data for a period of time of ONE sensor.
-    // function readHistory(){
-    // }
+    // register new sensor in this edge station
+    function register($sensorID, $sensorType){
+        //determine if same sensor type exists;
+        $query = "SELECT COUNT(SENSORTYPE) FROM SENSORS WHERE SENSORTYPE = ".$sensorType.";";
+        $stmt =  $this->conn->prepare($query);
+        $stmt -> execute();
+        $row = $stmt->fetch();
+        if($row[0]!=0)return false;
 
-    // update edge station status to stop
-    function stop(){
-
-        $query = "UPDATE info SET status = 0;";
+        // query to insert record
+        $query = "INSERT INTO
+                    " . $this->table_name . "
+                SET
+                    sensorID =:sensorID,
+                    sensorType=:sensorType";
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute();
+        
+
+        $stmt->bindParam(":sensorID", $sensorID);
+        $stmt->bindParam(":sensorType", $sensorType);
+
+        if($stmt->execute()){
+            // echo "sensor inserted";
+
+            //create new table for new sensor;
+            $query = "CREATE TABLE sensor_data_".$sensorID."(id int not null AUTO_INCREMENT, time int not null, data varchar(256) not null, PRIMARY KEY (id, time));";
+            $stmt = $this->conn->prepare($query);
+            
+            return $stmt->execute();
+        }
+     
+        return false;
     }
 
-    // update edge station status to running
-    function start(){
 
-        $query = "UPDATE info SET status = 1;";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute();
-        // return true;
-    }
 
-    // update sensor status
-    function sensorStart($sensorID){
-        $query = "UPDATE sensors SET sensorStatus = 1 WHERE sensorID = ".$sensorID.";";
-        $stmt = $this->conn->prepare($query);
-        // echo $query;
-        return $stmt->execute();
-    }
+    function initial($stationID,$stationType,$orderID,$GPSID){
+        // *********************************************************************
+        // while initializing, 
+        // delete all tables and clear info & sensors
+        // register a GPS sensor with ID
+        // insert machine type,order id, machine ID.
+        // *********************************************************************
 
-    // update sensor status
-    function sensorStop($sensorID){
-        $query = "UPDATE sensors SET sensorStatus = 0 WHERE sensorID = ".$sensorID.";";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute();
-    }
-
-    // delete sensor from sensor list
-    function delete(){
-    }
-
-    // IMPORTANT
-    // this function will clear all infomation in database
-    // including all sensor data tables
-    // except sensor list table (or GPS ?)
-    function initialize(){
         $query = "SET foreign_key_checks = 0";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -171,8 +164,8 @@ class sensors{
         if($stmt->execute()){
             $rows=$stmt->fetchAll();
             foreach ($rows as $row) {
-                if(strcmp($row[0],"sensors")==0 ||
-                    strcmp($row[0],"info")==0)continue;
+                // if(strcmp($row[0],"sensors")==0 ||
+                //     strcmp($row[0],"info")==0)continue;
                 $query = "DROP TABLE IF EXISTS ".$row[0];
 
                 $stmt = $this->conn->prepare($query);
@@ -180,17 +173,31 @@ class sensors{
 
             }
         }else{
-            echo "Failed to initialize";
+            echo "Failed to clear tables;";
         }
         $query = "SET foreign_key_ckecks = 1";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        $query = "TRUNCATE TABLE sensors";
+
+
+        //create info table if not exists;
+        $query = "CREATE TABLE IF NOT EXISTS info(stationID int not null, stationType int not null, orderID varchar(30), status int not null DEFAULT 1 ,PRIMARY KEY (stationID));";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
+
+        //create sensors table if not exists;
+        $query = "CREATE TABLE IF NOT EXISTS sensors(sensorID int not null, sensorType int not null, sensorStatus int not null DEFAULT 1, PRIMARY KEY (sensorID));";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        //insert infomation into info table
+        $query = "INSERT INTO INFO SET STATIONID = ".$stationID.", stationType = ".$stationType.", orderID= ".$orderID.";";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        $this->register($GPSID, 0);
         return true;
     }
-
     // TEST ONLY
     // this function generats random data for each sensor on current time
     function generateData(){
@@ -200,7 +207,6 @@ class sensors{
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         if($stmt->fetchColumn()==0)return false;
-
 
         $currentTime = time();
         $currentID;
@@ -256,28 +262,277 @@ class sensors{
         return $returnData;
     }
 
-    function setupStation($stationID, $order){
-        $query = "SELECT count(*) FROM info;";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        // echo $stmt->fetchColumn();
-
-
-        if($stmt->fetchColumn()!=0){
-            return false;
+    function generateDataForTime($startTime, $endTime, $period){
+        //CHECK STATION STATUS
+        $query = "SELECT STATUS FROM INFO;";
+        $stmt =  $this->conn->prepare($query);
+        $stmt -> execute();
+        $row = $stmt->fetch();
+        if($row[0]==0){
+            echo "Station down, unable to generate data";
+            return ;
         }
-        // echo $stmt->fetchAll()[0];
-        $query = "INSERT INTO info SET stationID=".$stationID.", orderID = ".$order.";";
-        // echo $query;
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute();
+
+        for($type = 0; $type < 6; $type ++){
+            // CHECK IF SENSOR EXISTS
+            $query = "SELECT COUNT(SENSORTYPE) FROM SENSORS WHERE SENSORTYPE = ".$type.";";
+            $stmt =  $this->conn->prepare($query);
+            $stmt -> execute();
+            $row = $stmt->fetch();
+            if($row[0]==0){
+                continue;
+            }
+
+            // CHECK SENSOR STATUS
+            $query = "SELECT SENSORSTATUS FROM SENSORS WHERE SENSORTYPE = ".$type.";";
+            $stmt =  $this->conn->prepare($query);
+            $stmt -> execute();
+            $row = $stmt->fetch();
+            if($row[0]==0)continue;
+
+
+
+
+            //SIMULATION DATA GENERATION
+            //START GENERATING DATA
+            echo "Attempting to generate data for type ".$type."...\n";
+            for($i =$startTime; $i<=$endTime; $i+=$period){
+                $this->generateDataByType($type,$i);
+            }   
+            echo "Done.\n";
+        }
     }
 
-    function changeOrderID($newID){
+    function generateDataByType($sensorType, $time){
+    	switch($sensorType){
+    		case 0:
+    		// echo "Generating data for GPS Sensor at time ".$time;
+    		$this->generateGPSData($time);
+    		break;
+    		case 1:
+    		// echo "Generating data for Speed sensor at time ".$time;
+            // $this->generateSpeedData($time);
+    		break;
+    		case 2:
+    		// echo "Generating data for Temperature Sensor at time ".$time;
+    		// $this->generateTempData($time);
+            break;
+    		case 3:
+    		// echo "Generating data for Soil Moisture Sensor at time ".$time;
+    		// $this->generatesoilMData($time);
+            break;
+    		case 4:
+    		// echo "Generating data for Oxygen Sensor at time ".$time;
+    		// $this->generateO2Data($time);
+            break;
+    		case 5:
+    		// echo "Generating data for Carbon Dioxide Sensor at time ".$time;
+    		// $this->generateCO2Data($time);
+            break;
+    		default:
+    		break;
 
-        $query = "UPDATE info SET orderID = ".$newID.";";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute();
+    	}
+    }
+
+    //type 0;
+    function generateGPSData($time){
+        //**************************************************************************
+        // sensor type :0   -   GPS sensor
+        // sensor data range:   longitude: 37.331431,37.338934
+        // sensor data range:   latitude: -121.884717,-121.877522
+        // sensor data random range: +-1
+        //**************************************************************************
+    	$query = "SELECT sensorID FROM sensors WHERE sensorType = 0;";
+    	$stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+	    //get last row infomation
+	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+	    $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+        	// echo "null test\n";
+            $longitude = rand(331431,338934)/1000000;
+            $latitude = rand(-884717,-877522)/1000000;
+            $currentData = array(
+                "longitude"=>$longitude+37,
+                "latitude"=>$latitude-121
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute()){
+                // echo "inserted first row";
+            }
+        }else{
+        	// echo "\nLAST INSERTED ID: ".$lastID."\n";
+        	$query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+		    $stmt = $this->conn->prepare($query);
+		    $stmt->execute();
+		    $row=$stmt->fetch();
+		    $lastData = $row[0];
+		    //get old data
+		    $oldJSONData = json_decode($lastData,true);
+		    $oldLongitude = $oldJSONData["longitude"]*1000000;
+		    $oldLatitude = $oldJSONData["latitude"]*1000000;
+		    //random two new values
+
+		    $newLongitude = rand(max(37331431,$oldLongitude-1),min(37338934,$oldLongitude+1))/1000000;
+		    // random a number
+		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
+		    // make it go as a linear
+		    $newLatitude = ($oldLatitude+1)/1000000;
+		    // echo "\nLa:\t".$newLatitude;
+
+            $currentData = array(
+                "longitude"=>$newLongitude,
+                "latitude"=>$newLatitude
+            );
+
+		    $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+		    // echo "\n".$query;
+		    $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
+    }
+
+    //type 1;
+    function generateSpeedData($time){
+    	//get sensorID of sensorType speed
+
+        //**************************************************************************
+        // sensor type :1   -   speed sensor
+        // sensor data range:   20-50
+        // sensor data random range: +-3
+        //**************************************************************************
+    	$query = "SELECT sensorID FROM sensors WHERE sensorType = 1;";
+    	$stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $currentID = $row[0];
+	    //get last row infomation
+	    $query = "SELECT MAX(ID) FROM SENSOR_DATA_".$currentID;
+	    $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row=$stmt->fetch();
+        $lastID = $row[0];
+        //generate data
+        //if its first data, totally random,
+        //if not, generate data based on last generated data;
+        if($lastID==null){
+        	//*******************************************************************************
+        	//generate new random value
+        	//*******************************************************************************
+        	$value = rand(0,100)/100+10;
+            $currentData = array(
+                "value"=>$value
+            );
+            $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+            if($stmt->execute())echo "inserted first row";
+        }else{
+        	// echo "\nLAST INSERTED ID: ".$lastID."\n";
+        	$query = "SELECT DATA FROM SENSOR_DATA_".$currentID." WHERE ID = ".$lastID.";";
+		    $stmt = $this->conn->prepare($query);
+		    $stmt->execute();
+		    $row=$stmt->fetch();
+		    $lastData = $row[0];
+		    // echo $lastData;
+		    //get old data
+		    $oldJSONData = json_decode($lastData,true);
+		    $oldValue = $oldJSONData["value"];
+
+
+		    $newValue = rand(max(10,$oldValue-1),min(11,$oldValue+1));
+
+            $currentData = array(
+                "value"=>$newValue
+            );
+
+		    $jsonData = json_encode($currentData);
+            $query = "INSERT INTO sensor_data_".$currentID." SET time=".$time.", data = '".$jsonData."'; ";
+            $stmt = $this->conn->prepare($query);
+		    // echo "\n".$query;
+		    $stmt->execute();
+            // if($stmt->execute())echo "\ninserted second row";
+        }
+    }
+
+    //type 2;
+    function generateTempData($time){
+        
+    }
+
+    //type 3;
+    function generatesoilMData($time){
+        
+    }
+
+    //type 4;
+    function generateO2Data($time){
+        
+    }
+
+    //type 5;
+    function generateCO2Data($time){
+        
+    }
+
+
+    function curlcall($url, $data){
+        //**************************************************************************
+        // this function call and sending data to another DB
+        //TODO: following codes are copy from web, needs modify.
+        //**************************************************************************
+        /*
+        //extract data from the post
+        //set POST variables
+        $url = 'http://domain.com/get-post.php';
+        $fields = array(
+            'lname' => urlencode($_POST['last_name']),
+            'fname' => urlencode($_POST['first_name']),
+            'title' => urlencode($_POST['title']),
+            'company' => urlencode($_POST['institution']),
+            'age' => urlencode($_POST['age']),
+            'email' => urlencode($_POST['email']),
+            'phone' => urlencode($_POST['phone'])
+        );
+
+        //url-ify the data for the POST
+        foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+        rtrim($fields_string, '&');
+
+        //open connection
+        $ch = curl_init();
+
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, count($fields));
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+
+        //execute post
+        $result = curl_exec($ch);
+
+        //close connection
+        curl_close($ch);
+        */
+    }
+
+    function getDataBySensorID($id,$t1,$t2){
+        //**************************************************************************
+        // returns sensor data as json between two timestamp.
+        //**************************************************************************
+
     }
 }
 ?>

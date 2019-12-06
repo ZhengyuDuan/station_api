@@ -19,29 +19,23 @@ $sensor = new sensors($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
- 
-// make sure data is not empty
+
+// echo json_encode($data);
 if(
     // !empty($data->sensorID) &&
-    $data->sensorType=="0" || 
-    !empty($data->sensorType)
+    ($data->sensorType=="0" || !empty($data->sensorType)) &&
+    ($data->sensorID=="0" || !empty($data->sensorID)) 
+
     // !empty($data->sensorStatus)
 ){
- 
-    // set product property values
-    // $sensor->sensorID = $data->sensorID;
-    $sensor->sensorType = $data->sensorType;
-    // $sensor->sensorStatus = 1;
-    // echo $sensor->sensorStatus;
-    // create the product
-    if($sensor->sensorType <= -1 || $sensor->sensorType>5){
+    if($data->sensorType <= -1 || $data->sensorType>5){
 
         // set response code - 201 created
         http_response_code(503);
  
         // tell the user
         echo json_encode(array("message" => "Unable to register sensor.SensorType wrong."));
-    }else if($sensor->register()){
+    }else if($sensor->register($data->sensorID, $data->sensorType)){
  
         // set response code - 201 created
         http_response_code(201);

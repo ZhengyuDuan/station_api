@@ -11,19 +11,11 @@ include_once '../objects/sensors.php';
 // instantiate database and sensors object
 $database = new Database();
 $db = $database->getConnection();
-
+ 
+// initialize object
 $sensors = new sensors($db);
-if($result = $sensors->getStationStatus()){
-    http_response_code(200);
-    echo json_encode($result);
-}
  
-else{
- 
-    http_response_code(404);
- 
-    echo json_encode(
-        array("message" => "Unable to get infomation.")
-    );
-}
+// $sensors->generateDataForTime(100,200,2);
+echo "..";
+echo $sensors->changeSensorStatus(1,4);
 ?>
