@@ -57,7 +57,7 @@ class sensors{
         // echo $id;
         $url = "machine/".$id;
         $data = array("status"=>$newStatus);
-        $this->postcurl($url,json_encode($data));
+        $this->curl_status($url,$newStatus);
 
 
         $query = "UPDATE info SET status = ".$newStatus.";" ;
@@ -83,7 +83,7 @@ class sensors{
 
         $url = "sensor/".$sensorID;
         $data = array("status"=>$status);
-        $this->postcurl($url,json_encode($data));
+        $this->curl_status($url,$status);
 
 
         // CHECK IF SENSOR EXISTS
@@ -191,18 +191,23 @@ class sensors{
         //create info table if not exists;
         $query = "CREATE TABLE IF NOT EXISTS info(stationID int not null, stationType int not null, orderID varchar(30), status int not null DEFAULT 1 ,PRIMARY KEY (stationID));";
         $stmt = $this->conn->prepare($query);
-        if($stmt->execute())echo "info table created \n";
-
+        if($stmt->execute()){
+            // echo "info table created \n";
+        }
         //create sensors table if not exists;
         $query = "CREATE TABLE IF NOT EXISTS sensors(sensorID int not null, sensorType int not null, sensorStatus int not null DEFAULT 1, PRIMARY KEY (sensorID));";
         $stmt = $this->conn->prepare($query);
-        if($stmt->execute())echo "sensors table created \n";
+        if($stmt->execute()){
+            // echo "sensors table created \n";
+        }
 
         //insert infomation into info table
         $query = "INSERT INTO info SET stationID = ".$stationID.", stationType = ".$stationType.", orderID= ".$orderID.";";
         $stmt = $this->conn->prepare($query);
-        echo $query;
-        if($stmt->execute())echo "info inserted  \n";
+        // echo $query;
+        if($stmt->execute()){
+            // echo "info inserted  \n";
+        }
 
         $this->register($GPSID, 0);
         return true;
@@ -316,13 +321,31 @@ class sensors{
             //**************************************************************************
             $return["time"]=$i;
             $return["sensors"] = array();
+            $items = array();
             foreach ($sensors as $type) {
             // echo "Attempting to generate data for type ".$type."...\n";
-            array_push($return["sensors"], json_decode($this->generateDataByType($type,$i),true));
+            array_push($items,$this->generateDataByType($type,$i));
+            // array_push($return["sensors"], $this->generateDataByType($type,$i));
             }
-            // $this->curl();
-            echo json_encode($return);
-            echo "\n";
+            // $this->postcurl($return);
+            // echo json_encode($return);
+            // echo "\n";
+            $return["sensors"]=json_encode($items);
+            // echo json_encode($items);
+            $API_URL = "http://xckang.com/api/public/data";
+
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $API_URL);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, true);
+            // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $return);
+            $output = curl_exec($ch);
+            $info = curl_getinfo($ch);
+            // echo $output;
+            curl_close($ch);
         }   
         
         return true;
@@ -434,7 +457,7 @@ class sensors{
             }
         }
 
-        return json_encode($return);
+        return $return;
         
     }
 
@@ -510,7 +533,7 @@ class sensors{
                 $return["data"]=json_decode($jsonData);
             }
         }
-        return json_encode($return);
+        return $return;
     }
 
     //type 2;
@@ -585,7 +608,7 @@ class sensors{
                 $return["data"]=json_decode($jsonData);
             }
         }
-        return json_encode($return);
+        return $return;
         
     }
 
@@ -662,7 +685,7 @@ class sensors{
             }
         }
         
-        return json_encode($return);
+        return $return;
     }
 
     //type 4;
@@ -738,7 +761,7 @@ class sensors{
             }
         }
         
-        return json_encode($return);
+        return $return;
     }
 
     //type 5;
@@ -815,31 +838,41 @@ class sensors{
             }
                
         }
-        return json_encode($return);
+        return $return;
     }
 
 
-    function postcurl($url, $data){
-        //**************************************************************************
-        // this function call and sending data to another DB
-        //TODO: following codes are copy from web, needs modify.
-        //**************************************************************************
-        // $data = array(
-        //     "status"=>1);                                                               
-        $data_string = json_encode($data);
+    function postcurl($data){                       
+        // echo json_encode($data);  
+        $API_URL = "http://xckang.com/api/public/data";
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $API_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, true);
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $output = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        // echo $output;
+        curl_close($ch);
+}
+    function curl_status($url, $status){
+
         $API_URL = "http://xckang.com/api/public/".$url;
-        $ch = curl_init($API_URL);                
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");               
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                  
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                       
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(                               
-            'Content-Type: application/json',                                              
-            'Content-Length: ' . strlen($data_string))                                 
-        );                                            
-                                                                                                                             
-        $result = curl_exec($ch);
-        echo $result;
-        echo "\n";
+        $in = array("status"=>$status);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $API_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, true);
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $in);
+        $output = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        curl_close($ch);
+
     }
 
     function getDataByTime($id,$t1,$t2){

@@ -38,7 +38,7 @@ if(
     }else if($sensor->register($data->sensorID, $data->sensorType)){
  
         // set response code - 201 created
-        http_response_code(201);
+        http_response_code(200);
  
         // tell the user
         echo json_encode(array("message" => "sensor was registered."));
