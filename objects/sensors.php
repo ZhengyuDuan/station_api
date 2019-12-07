@@ -468,9 +468,9 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 20.0;
-        $MAX = 50.0;
-        $RANGE = 3.0;
+        $MIN = 5.0;
+        $MAX = 15.0;
+        $RANGE = 1.0;
         $sensorType = 1;
         //**************************************************************************
         // sensor type :1   -   speed sensor
@@ -543,7 +543,7 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 20.0;
+        $MIN = 25.0;
         $MAX = 50.0;
         $RANGE = 3.0;
         $sensorType = 2;
@@ -619,9 +619,9 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 20.0;
-        $MAX = 50.0;
-        $RANGE = 3.0;
+        $MIN = 3.60;
+        $MAX = 5.20;
+        $RANGE = 0.20;
         $sensorType = 3;
         //**************************************************************************
         // sensor type :1   -   speed sensor
@@ -695,9 +695,9 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 20.0;
-        $MAX = 50.0;
-        $RANGE = 3.0;
+        $MIN = 1.10;
+        $MAX = 1.45;
+        $RANGE = 0.05;
         $sensorType = 4;
         //**************************************************************************
         // sensor type :1   -   speed sensor
@@ -723,7 +723,7 @@ class sensors{
             //*******************************************************************************
             //generate new random value
             //*******************************************************************************
-            $value = rand($MIN*10,$MAX*10)/10;
+            $value = rand($MIN*100,$MAX*100)/100;
             // echo "first value: ".$value;
             $currentData = array(
                 "value"=>$value
@@ -747,7 +747,7 @@ class sensors{
             $oldValue = $oldJSONData["value"];
 
 
-            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+            $newValue = rand(max($MIN*100,($oldValue-$RANGE)*100),min($MAX*100,($oldValue+$RANGE)*100))/100;
 
             $currentData = array(
                 "value"=>$newValue
@@ -771,9 +771,9 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 20.0;
-        $MAX = 50.0;
-        $RANGE = 3.0;
+        $MIN = 1.50;
+        $MAX = 1.62;
+        $RANGE = 0.02;
         $sensorType = 5;
         //**************************************************************************
         // sensor type :1   -   speed sensor
@@ -799,7 +799,7 @@ class sensors{
             //*******************************************************************************
             //generate new random value
             //*******************************************************************************
-            $value = rand($MIN*10,$MAX*10)/10;
+            $value = rand($MIN*100,$MAX*100)/100;
             // echo "first value: ".$value;
             $currentData = array(
                 "value"=>$value
@@ -823,7 +823,7 @@ class sensors{
             $oldValue = $oldJSONData["value"];
 
 
-            $newValue = rand(max($MIN*10,($oldValue-$RANGE)*10),min($MAX*10,($oldValue+$RANGE)*10))/10;
+            $newValue = rand(max($MIN*100,($oldValue-$RANGE)*100),min($MAX*100,($oldValue+$RANGE)*100))/100;
 
             $currentData = array(
                 "value"=>$newValue
