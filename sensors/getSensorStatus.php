@@ -19,18 +19,20 @@ $data = json_decode(file_get_contents("php://input"));
 if(
     ($data->sensorID=="0" || !empty($data->sensorID)) 
 ){
-    if($result = $sensor->getSensorStatus($data->sensorID)){
-
-        http_response_code(200);
-        echo json_encode($result);
-   
-    }else{
+    $result = $sensor->getSensorStatus($data->sensorID);
+    // echo $result;
+    if($result == -1){
  
         http_response_code(404);
      
         echo json_encode(
             array("message" => "Unable to get infomation.")
         );
+    }else{
+
+        http_response_code(200);
+        echo json_encode($result);
+   
     }
 }
  

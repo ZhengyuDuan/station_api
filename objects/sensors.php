@@ -7,6 +7,7 @@ soil Moisture sensor
 Oxygen sensor
 Carbon Dioxide Sensor
 */
+$CURL_FLAG = true;
 class sensors{
  
     // database connection and table name
@@ -71,7 +72,7 @@ class sensors{
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $count = $stmt->fetchColumn();
-        if($count == 0)return false;
+        if($count == 0)return -1;
         // PROCESS
         $query = "SELECT sensorStatus from sensors WHERE sensorID = ".$sensorID.";" ;
         $stmt = $this->conn->prepare($query);
@@ -212,6 +213,7 @@ class sensors{
         $this->register($GPSID, 0);
         return true;
     }
+    /*
     // TEST ONLY
     // this function generats random data for each sensor on current time
     function generateData(){
@@ -275,7 +277,7 @@ class sensors{
         }
         return $returnData;
     }
-
+*/
     function generateDataForTime($startTime, $endTime, $period){
 
         //CHECK STATION STATUS
@@ -334,18 +336,20 @@ class sensors{
             // echo json_encode($items);
             $API_URL = "http://xckang.com/api/public/data";
 
+            if($CURL_FLAG==true){
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $API_URL);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POST, true);
-            // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+	            $ch = curl_init();
+	            curl_setopt($ch, CURLOPT_URL, $API_URL);
+	            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	            curl_setopt($ch, CURLOPT_POST, true);
+	            // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
 
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $return);
-            $output = curl_exec($ch);
-            $info = curl_getinfo($ch);
-            // echo $output;
-            curl_close($ch);
+	            curl_setopt($ch, CURLOPT_POSTFIELDS, $return);
+	            $output = curl_exec($ch);
+	            $info = curl_getinfo($ch);
+	            // echo $output;
+	            curl_close($ch);
+            }
         }   
         
         return true;
@@ -437,11 +441,11 @@ class sensors{
 		    $oldLatitude = $oldJSONData["latitude"]*1000000;
 		    //random two new values
 
-		    $newLongitude = rand(max(37331431,$oldLongitude-1),min(37338934,$oldLongitude+1))/1000000;
+		    $newLongitude = rand(max(37331431,$oldLongitude-3),min(37338934,$oldLongitude+3))/1000000;
 		    // random a number
 		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
 		    // make it go as a linear
-		    $newLatitude = ($oldLatitude-1)/1000000;
+		    $newLatitude = ($oldLatitude+2)/1000000;
 		    // echo "\nLa:\t".$newLatitude;
 
             $currentData = array(
@@ -543,9 +547,9 @@ class sensors{
         //**************************************************************************
         // initialize return result;
         //**************************************************************************
-        $MIN = 25.0;
-        $MAX = 50.0;
-        $RANGE = 3.0;
+        $MIN = 65.0;
+        $MAX = 75.0;
+        $RANGE = 2.0;
         $sensorType = 2;
         //**************************************************************************
         // sensor type :1   -   speed sensor
@@ -841,24 +845,8 @@ class sensors{
         return $return;
     }
 
-
-    function postcurl($data){                       
-        // echo json_encode($data);  
-        $API_URL = "http://xckang.com/api/public/data";
-
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $API_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, true);
-
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        $output = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        // echo $output;
-        curl_close($ch);
-}
     function curl_status($url, $status){
+    	if($CURL_FLAG==false)return;
 
         $API_URL = "http://xckang.com/api/public/".$url;
         $in = array("status"=>$status);
