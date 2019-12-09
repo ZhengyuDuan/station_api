@@ -337,7 +337,7 @@ class sensors{
             $API_URL = "http://xckang.com/api/public/data";
 
             if($CURL_FLAG==true){
-            	echo "GeneratedData sent.\n"
+            	echo "GeneratedData sent.\n";
 	            $ch = curl_init();
 	            curl_setopt($ch, CURLOPT_URL, $API_URL);
 	            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -847,7 +847,7 @@ class sensors{
 
     function curl_status($url, $status){
     	if($CURL_FLAG==false)return;
-    	echo "sensorStatus changed sent.\n"
+    	echo "sensorStatus changed sent.\n";
         $API_URL = "http://xckang.com/api/public/".$url;
         $in = array("status"=>$status);
 
