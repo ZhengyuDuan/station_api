@@ -17,6 +17,13 @@ $sensors = new sensors($db);
  
 // read products will be here
 // query products
+
+    http_response_code(200);
+ 
+    // tell the user no products found
+    echo json_encode(
+    array("message" => "This API currently not open for public.")
+/*
 if($result = $sensors->generateData()){
     // set response code - 200 OK
     http_response_code(200);
@@ -37,3 +44,4 @@ else{
         array("message" => "Gathering Data Failed.")
     );
 }
+*/
