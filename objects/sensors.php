@@ -288,11 +288,11 @@ class sensors{
         $stmt =  $this->conn->prepare($query);
         $stmt -> execute();
         $row = $stmt->fetch();
-        if($row[0]==0){
+        if($row[0]==0 /*offline*/ || $row[0]==3 /*maintenance*/){
             echo "Station down, unable to generate data";
             return ;
         }
-
+        $this->changeStationStatus(2);
         $sensors = array();
 
         for($type = 0; $type < 6; $type ++){
