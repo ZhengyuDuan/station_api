@@ -335,7 +335,7 @@ class sensors{
             // echo json_encode($items);
             $API_URL = "http://xckang.com/api/public/data";
 
-            if(this->CURL_FLAG==1){
+            if($this->CURL_FLAG==1){
             	echo "GeneratedData sent.\n";
 	            $ch = curl_init();
 	            curl_setopt($ch, CURLOPT_URL, $API_URL);
