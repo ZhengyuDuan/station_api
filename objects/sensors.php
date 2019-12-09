@@ -12,7 +12,7 @@ class sensors{
     // database connection and table name
     private $conn;
     private $table_name = "sensors";
-	private $CURL_FLAG = 1;
+	private $CURL_FLAG = 0;
  
     // object properties
     public $sensorID;
@@ -147,7 +147,10 @@ class sensors{
             $query = "CREATE TABLE sensor_data_".$sensorID."(id int not null AUTO_INCREMENT, time int not null, data varchar(256) not null, PRIMARY KEY (id, time));";
             $stmt = $this->conn->prepare($query);
             
-            return $stmt->execute();
+            if($stmt->execute()){
+                $this->changeSensorStatus($sensorID,1);
+                return true;
+            }
         }
      
         return false;
@@ -189,13 +192,13 @@ class sensors{
 
 
         //create info table if not exists;
-        $query = "CREATE TABLE IF NOT EXISTS info(stationID int not null, stationType int not null, orderID varchar(30), status int not null DEFAULT 1 ,PRIMARY KEY (stationID));";
+        $query = "CREATE TABLE IF NOT EXISTS info(stationID int not null, stationType int not null, orderID varchar(30), status int not null DEFAULT 0 ,PRIMARY KEY (stationID));";
         $stmt = $this->conn->prepare($query);
         if($stmt->execute()){
             // echo "info table created \n";
         }
         //create sensors table if not exists;
-        $query = "CREATE TABLE IF NOT EXISTS sensors(sensorID int not null, sensorType int not null, sensorStatus int not null DEFAULT 1, PRIMARY KEY (sensorID));";
+        $query = "CREATE TABLE IF NOT EXISTS sensors(sensorID int not null, sensorType int not null, sensorStatus int not null DEFAULT 0, PRIMARY KEY (sensorID));";
         $stmt = $this->conn->prepare($query);
         if($stmt->execute()){
             // echo "sensors table created \n";
@@ -208,6 +211,7 @@ class sensors{
         if($stmt->execute()){
             // echo "info inserted  \n";
         }
+        $this->changeStationStatus(1);
 
         $this->register($GPSID, 0);
         return true;
@@ -336,7 +340,7 @@ class sensors{
             $API_URL = "http://xckang.com/api/public/data";
 
             if($this->CURL_FLAG==1){
-            	echo "GeneratedData sent.\n";
+            	echo "GeneratedData for time [".$i."]sent.\n";
 	            $ch = curl_init();
 	            curl_setopt($ch, CURLOPT_URL, $API_URL);
 	            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
