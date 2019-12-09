@@ -13,17 +13,18 @@ $database = new Database();
 $db = $database->getConnection();
 
 $sensors = new sensors($db);
-if($result = $sensors->getStationStatus()){
-    http_response_code(200);
-    echo json_encode($result);
-}
- 
-else{
- 
+$result = $sensors->getStationStatus();
+if($result == -1){
     http_response_code(404);
  
     echo json_encode(
         array("message" => "Unable to get infomation.")
     );
+}
+ 
+else{
+    http_response_code(200);
+    echo json_encode($result);
+ 
 }
 ?>

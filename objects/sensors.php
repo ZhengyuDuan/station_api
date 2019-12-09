@@ -46,8 +46,12 @@ class sensors{
     function getStationStatus(){
         $query = "SELECT status from info;" ;
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchColumn();
+        if($stmt->execute()){
+            return $stmt->fetchColumn();
+
+        }else{
+            return -1;
+        }
     }
 
     function changeStationStatus($newStatus){
