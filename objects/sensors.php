@@ -7,12 +7,12 @@ soil Moisture sensor
 Oxygen sensor
 Carbon Dioxide Sensor
 */
-$CURL_FLAG = true;
 class sensors{
  
     // database connection and table name
     private $conn;
     private $table_name = "sensors";
+	private $CURL_FLAG = 1;
  
     // object properties
     public $sensorID;
@@ -59,7 +59,6 @@ class sensors{
         $url = "machine/".$id;
         $data = array("status"=>$newStatus);
         $this->curl_status($url,$newStatus);
-
 
         $query = "UPDATE info SET status = ".$newStatus.";" ;
         $stmt = $this->conn->prepare($query);
@@ -336,7 +335,7 @@ class sensors{
             // echo json_encode($items);
             $API_URL = "http://xckang.com/api/public/data";
 
-            if($CURL_FLAG==true){
+            if(this->CURL_FLAG==1){
             	echo "GeneratedData sent.\n";
 	            $ch = curl_init();
 	            curl_setopt($ch, CURLOPT_URL, $API_URL);
@@ -846,7 +845,7 @@ class sensors{
     }
 
     function curl_status($url, $status){
-    	if($CURL_FLAG==false)return;
+    	if($this->CURL_FLAG==0)return;
     	echo "sensorStatus changed sent.\n";
         $API_URL = "http://xckang.com/api/public/".$url;
         $in = array("status"=>$status);
