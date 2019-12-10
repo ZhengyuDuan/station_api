@@ -12,7 +12,7 @@ class sensors{
     // database connection and table name
     private $conn;
     private $table_name = "sensors";
-    private $CURL_FLAG = 0;
+    private $CURL_FLAG = 1;
 
     // object properties
     public $sensorID;
