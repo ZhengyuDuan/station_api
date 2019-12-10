@@ -12,7 +12,7 @@ class sensors{
     // database connection and table name
     private $conn;
     private $table_name = "sensors";
-	private $CURL_FLAG = 1;
+    private $CURL_FLAG = 0;
 
     // object properties
     public $sensorID;
@@ -854,7 +854,7 @@ class sensors{
 
     function curl_status($url, $status){
     	if($this->CURL_FLAG==0)return;
-    	echo "sensorStatus changed sent.\n";
+    	echo "Status changed sent.\n";
         $API_URL = "http://xckang.com/api/public/".$url;
         $in = array("status"=>$status);
 
