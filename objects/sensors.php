@@ -452,7 +452,7 @@ class sensors{
 		    // random a number
 		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
 		    // make it go as a linear
-		    $newLatitude = ($oldLatitude+20)/1000000;
+		    $newLatitude = ($oldLatitude+200)/1000000;
 		    // echo "\nLa:\t".$newLatitude;
 
             $currentData = array(
