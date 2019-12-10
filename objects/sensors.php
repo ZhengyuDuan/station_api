@@ -880,7 +880,7 @@ class sensors{
         $result['sensorID']=$this->sensorID;
         $result['datas'] = array();
         $currentSensorID=htmlspecialchars(strip_tags($this->sensorID));
-        $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE time>".$t1." AND time<".$t2." ORDER BY time DESC ;";
+        $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE time>=".$t1." AND time<=".$t2." ORDER BY time DESC ;";
         $stmt = $this->conn->prepare($query);
         
         if($stmt->execute()){
