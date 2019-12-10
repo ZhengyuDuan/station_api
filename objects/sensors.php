@@ -448,11 +448,11 @@ class sensors{
 		    $oldLatitude = $oldJSONData["latitude"]*1000000;
 		    //random two new values
 
-		    $newLongitude = rand(max(37331431,$oldLongitude-3),min(37338934,$oldLongitude+3))/1000000;
+		    $newLongitude = rand(max(37331431,$oldLongitude-500),min(37338934,$oldLongitude+500))/1000000;
 		    // random a number
-		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
+		    $newLatitude = rand(max(-121884717,$oldLatitude+500),min(-121877522,$oldLatitude-500))/1000000;
 		    // make it go as a linear
-		    $newLatitude = ($oldLatitude+200)/1000000;
+		    // $newLatitude = ($oldLatitude+200)/1000000;
 		    // echo "\nLa:\t".$newLatitude;
 
             $currentData = array(
