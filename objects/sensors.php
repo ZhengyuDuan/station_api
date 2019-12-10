@@ -8,17 +8,17 @@ Oxygen sensor
 Carbon Dioxide Sensor
 */
 class sensors{
- 
+
     // database connection and table name
     private $conn;
     private $table_name = "sensors";
 	private $CURL_FLAG = 1;
- 
+
     // object properties
     public $sensorID;
     public $sensorType;
     public $sensorStatus;
- 
+
     // constructor with $db as database connection
     public function __construct($db){
         $this->conn = $db;
@@ -29,19 +29,19 @@ class sensors{
     function readSensors(){
         $query = "SELECT sensorID,sensorType,sensorStatus FROM
                     " . $this->table_name ;
-     
+
         // prepare query statement
         $stmt = $this->conn->prepare($query);
-     
+
         // execute query
         $stmt->execute();
-     
+
         return $stmt;
     }
 
     /*
     *   get station status
-    *   return status from table info 
+    *   return status from table info
     */
     function getStationStatus(){
         $query = "SELECT status from info;" ;
@@ -139,7 +139,7 @@ class sensors{
                     sensorID =:sensorID,
                     sensorType=:sensorType";
         $stmt = $this->conn->prepare($query);
-        
+
 
         $stmt->bindParam(":sensorID", $sensorID);
         $stmt->bindParam(":sensorType", $sensorType);
@@ -150,13 +150,13 @@ class sensors{
             //create new table for new sensor;
             $query = "CREATE TABLE sensor_data_".$sensorID."(id int not null AUTO_INCREMENT, time int not null, data varchar(256) not null, PRIMARY KEY (id, time));";
             $stmt = $this->conn->prepare($query);
-            
+
             if($stmt->execute()){
                 $this->changeSensorStatus($sensorID,1);
                 return true;
             }
         }
-     
+
         return false;
     }
 
@@ -164,7 +164,7 @@ class sensors{
 
     function initial($stationID,$stationType,$orderID,$GPSID){
         // *********************************************************************
-        // while initializing, 
+        // while initializing,
         // delete all tables and clear info & sensors
         // register a GPS sensor with ID
         // insert machine type,order id, machine ID.
@@ -251,7 +251,7 @@ class sensors{
             // generate data depends on sensor type
             // gps sensor has 2 values;
             // others have one value;
-            $currentID = $row['sensorID']; 
+            $currentID = $row['sensorID'];
             if($row['sensorType']==0){
                 $longitude = rand(331431,338934)/1000000;
                 $latitude = rand(-884717,-877522)/1000000;
@@ -316,7 +316,7 @@ class sensors{
             $row = $stmt->fetch();
             if($row[0]==0 || //turn off
                 $row[0]==4 || // inactive
-                $row[0]==5  // maintainence 
+                $row[0]==5  // maintainence
                 )continue;
 
             array_push($sensors,$type);
@@ -357,8 +357,8 @@ class sensors{
 	            // echo $output;
 	            curl_close($ch);
             }
-        }   
-        
+        }
+
         return true;
     }
 
@@ -452,7 +452,7 @@ class sensors{
 		    // random a number
 		    // $newLatitude = rand(max(-121884717,$oldLatitude-1),min(-121877522,$oldLatitude+1))/1000000;
 		    // make it go as a linear
-		    $newLatitude = ($oldLatitude+2)/1000000;
+		    $newLatitude = ($oldLatitude+20)/1000000;
 		    // echo "\nLa:\t".$newLatitude;
 
             $currentData = array(
@@ -469,7 +469,7 @@ class sensors{
         }
 
         return $return;
-        
+
     }
 
     //type 1;
@@ -620,7 +620,7 @@ class sensors{
             }
         }
         return $return;
-        
+
     }
 
     //type 3;
@@ -695,7 +695,7 @@ class sensors{
                 $return["data"]=json_decode($jsonData);
             }
         }
-        
+
         return $return;
     }
 
@@ -771,7 +771,7 @@ class sensors{
                 $return["data"]=json_decode($jsonData);
             }
         }
-        
+
         return $return;
     }
 
@@ -847,7 +847,7 @@ class sensors{
             if($stmt->execute()){
                 $return["data"]=json_decode($jsonData);
             }
-               
+
         }
         return $return;
     }
@@ -882,7 +882,7 @@ class sensors{
         $currentSensorID=htmlspecialchars(strip_tags($this->sensorID));
         $query = "SELECT * FROM sensor_data_".$currentSensorID." WHERE time>=".$t1." AND time<=".$t2." ORDER BY time ASC ;";
         $stmt = $this->conn->prepare($query);
-        
+
         if($stmt->execute()){
             $rows=$stmt->fetchAll();
             $arr_item=array();
